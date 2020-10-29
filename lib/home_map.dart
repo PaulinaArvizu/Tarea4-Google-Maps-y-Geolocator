@@ -1,8 +1,11 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:share/share.dart';
+import 'package:address_search_field/address_search_field.dart';
 
 class HomeMap extends StatefulWidget {
   const HomeMap({Key key}) : super(key: key);
@@ -13,6 +16,7 @@ class HomeMap extends StatefulWidget {
 
 class _HomeMapState extends State<HomeMap> {
   Set<Marker> _mapMarkers = Set();
+  Set<Polygon> _polygons = HashSet<Polygon>();
   GoogleMapController _mapController;
   Position _currentPosition;
   Position _defaultPosition = Position(
@@ -30,6 +34,17 @@ class _HomeMapState extends State<HomeMap> {
           return Scaffold(
             body: Stack(
               children: [
+                AddressSearchBox(
+                  controller: TextEditingController(),
+                  country: String,
+                  city: String,
+                  hintText: String,
+                  noResultText: String,
+                  exceptions: <String>[],
+                  coordForRef: bool,
+                  onDone: (BuildContext dialogContext, AddressPoint point) {},
+                  onCleaned: () {},
+                ),
                 GoogleMap(
                   initialCameraPosition: CameraPosition(
                     target: LatLng(
