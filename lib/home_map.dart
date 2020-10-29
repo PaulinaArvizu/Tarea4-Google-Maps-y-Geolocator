@@ -89,10 +89,28 @@ class _HomeMapState extends State<HomeMap> {
           position: coord,
           icon:
               BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
-          infoWindow: InfoWindow(
-            title: coord.toString(),
-            snippet: _markerAddress,
-          ),
+          // infoWindow: InfoWindow(
+          //   title: coord.toString(),
+          //   snippet: _markerAddress,
+          // ),
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (builder) {
+                return Container(
+                  height: MediaQuery.of(context).size.height / 8,
+                  child: Center(
+                      child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(coord.toString()),
+                      Text(_markerAddress),
+                    ],
+                  )),
+                );
+              },
+            );
+          },
         ),
       );
     });
