@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:share/share.dart';
-import 'package:address_search_field/address_search_field.dart';
 
 class HomeMap extends StatefulWidget {
   const HomeMap({Key key}) : super(key: key);
@@ -22,7 +20,7 @@ class _HomeMapState extends State<HomeMap> {
   Position _defaultPosition = Position(
     longitude: 20.608148,
     latitude: -103.417576,
-  );
+  ); //ubicacion iteso
 
   @override
   Widget build(BuildContext context) {
@@ -34,17 +32,17 @@ class _HomeMapState extends State<HomeMap> {
           return Scaffold(
             body: Stack(
               children: [
-                AddressSearchBox(
-                  controller: TextEditingController(),
-                  country: String,
-                  city: String,
-                  hintText: String,
-                  noResultText: String,
-                  exceptions: <String>[],
-                  coordForRef: bool,
-                  onDone: (BuildContext dialogContext, AddressPoint point) {},
-                  onCleaned: () {},
-                ),
+                // AddressSearchBox(
+                //   controller: TextEditingController(),
+                //   country: 'String',
+                //   city: 'String',
+                //   hintText: 'String',
+                //   noResultsText: 'String',
+                //   exceptions: <String>[],
+                //   coordForRef: true,
+                //   onDone: (BuildContext dialogContext, AddressPoint point) {},
+                //   onCleaned: () {},
+                // ),
                 GoogleMap(
                   initialCameraPosition: CameraPosition(
                     target: LatLng(
@@ -58,12 +56,25 @@ class _HomeMapState extends State<HomeMap> {
                 ),
               ],
             ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                Share.share("$_currentPosition", subject: "Aqui me encuentro");
-              },
-              child: Icon(Icons.share),
+            floatingActionButton: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FloatingActionButton(
+                  onPressed: () {},
+                  child: Icon(Icons.linear_scale),
+                ),
+                FloatingActionButton(
+                  onPressed: _moveToCurrentPosition,
+                  child: Icon(Icons.my_location),
+                ),
+              ],
             ),
+            // floatingActionButton: FloatingActionButton(
+            //   onPressed: () {
+            //     Share.share("$_currentPosition", subject: "Aqui me encuentro");
+            //   },
+            //   child: Icon(Icons.share),
+            // ),
           );
         } else {
           Scaffold(
@@ -133,15 +144,15 @@ class _HomeMapState extends State<HomeMap> {
 
   Future<void> _getCurrentPosition() async {
     // verify permissions
-    LocationPermission permission = await checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
-      permission = await requestPermission();
+      permission = await Geolocator.requestPermission();
     }
 
     // get current position
-    _currentPosition =
-        await getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    _currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
 
     // get address
     String _currentAddress = await _getGeocodingAddress(_currentPosition);
@@ -167,6 +178,20 @@ class _HomeMapState extends State<HomeMap> {
             _currentPosition.longitude,
           ),
           zoom: 15.0,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _moveToCurrentPosition() async {
+    _mapController.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(
+            _currentPosition.latitude,
+            _currentPosition.longitude,
+          ),
+          zoom: 18.0,
         ),
       ),
     );
