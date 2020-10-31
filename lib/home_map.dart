@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -14,13 +12,15 @@ class HomeMap extends StatefulWidget {
 
 class _HomeMapState extends State<HomeMap> {
   Set<Marker> _mapMarkers = Set();
-  Set<Polygon> _polygons = HashSet<Polygon>();
+  Set<Polygon> _mapPolygons = Set<Polygon>();
+  bool _showMapPolygons = false;
   GoogleMapController _mapController;
   Position _currentPosition;
   Position _defaultPosition = Position(
     longitude: 20.608148,
     latitude: -103.417576,
   ); //ubicacion iteso
+  TextEditingController _addressController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -32,17 +32,6 @@ class _HomeMapState extends State<HomeMap> {
           return Scaffold(
             body: Stack(
               children: [
-                // AddressSearchBox(
-                //   controller: TextEditingController(),
-                //   country: 'String',
-                //   city: 'String',
-                //   hintText: 'String',
-                //   noResultsText: 'String',
-                //   exceptions: <String>[],
-                //   coordForRef: true,
-                //   onDone: (BuildContext dialogContext, AddressPoint point) {},
-                //   onCleaned: () {},
-                // ),
                 GoogleMap(
                   initialCameraPosition: CameraPosition(
                     target: LatLng(
@@ -53,6 +42,7 @@ class _HomeMapState extends State<HomeMap> {
                   onMapCreated: _onMapCreated,
                   markers: _mapMarkers,
                   onLongPress: _setMarker,
+                  polygons: _mapPolygons,
                 ),
               ],
             ),
@@ -60,7 +50,10 @@ class _HomeMapState extends State<HomeMap> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 FloatingActionButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    _showMapPolygons = !_showMapPolygons;
+                    _createPolygons();
+                  },
                   child: Icon(Icons.linear_scale),
                 ),
                 FloatingActionButton(
@@ -208,5 +201,26 @@ class _HomeMapState extends State<HomeMap> {
       return "${place.thoroughfare}, ${place.locality}";
     }
     return "No address available";
+  }
+
+  void _createPolygons() {
+    List<LatLng> polygonPointsList = List<LatLng>();
+    _mapPolygons = Set();
+    if (!_showMapPolygons) {
+      setState(() {});
+      return;
+    }
+    for (int i = 0; i < _mapMarkers.length; i++)
+      polygonPointsList.add(_mapMarkers.elementAt(i).position);
+    _mapPolygons.add(
+      new Polygon(
+        polygonId: PolygonId('marker'),
+        points: polygonPointsList,
+        strokeColor: Colors.blue,
+        strokeWidth: 1,
+        fillColor: Colors.blue[100].withOpacity(0.5),
+      ),
+    );
+    setState(() {});
   }
 }
