@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoder/geocoder.dart';
 
 class HomeMap extends StatefulWidget {
   const HomeMap({Key key}) : super(key: key);
@@ -44,6 +45,37 @@ class _HomeMapState extends State<HomeMap> {
                   onLongPress: _setMarker,
                   polygons: _mapPolygons,
                 ),
+                Positioned(
+                  top: 40,
+                  left: 20,
+                  right: 20,
+                  child: Container(
+                    color: Colors.white,
+                    child: TextFormField(
+                      controller: _addressController,
+                      onFieldSubmitted: (value) async {
+                        var place = await _getAddress(value);
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (builder) {
+                            return Container(
+                              height:
+                                  50, //MediaQuery.of(context).size.height / 8,
+                              child: Center(
+                                child: Text(place),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        prefixIcon: Icon(Icons.search),
+                        hintText: 'Search address',
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
             floatingActionButton: Column(
@@ -56,6 +88,7 @@ class _HomeMapState extends State<HomeMap> {
                   },
                   child: Icon(Icons.linear_scale),
                 ),
+                SizedBox(height: 10),
                 FloatingActionButton(
                   onPressed: _moveToCurrentPosition,
                   child: Icon(Icons.my_location),
@@ -222,5 +255,32 @@ class _HomeMapState extends State<HomeMap> {
       ),
     );
     setState(() {});
+  }
+
+  Future<String> _getAddress(String address) async {
+    // geocoding
+    try {
+      List<Address> addresses =
+          await Geocoder.local.findAddressesFromQuery(address);
+      var first = addresses.first;
+      String addressLine = first.addressLine;
+
+      // move camera
+      _mapController.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(
+              first.coordinates.latitude,
+              first.coordinates.longitude,
+            ),
+            zoom: 10,
+          ),
+        ),
+      );
+      return addressLine;
+    } catch (e) {
+      print(e);
+      return 'No address found.';
+    }
   }
 }
